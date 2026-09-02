@@ -27,3 +27,14 @@ _Avoid_: lookup, matching, search
 
 Resolution either succeeds outright or is ambiguous. Ambiguity is a tie no tier
 breaks — never a confidence score.
+
+**Cadence**:
+How often the user intends to be in touch with a given contact, in days.
+_Avoid_: frequency, interval, stay-in-touch
+
+Cadence is per-contact and set by the user — monthly for a parent, yearly for a
+dentist. It lives in Monica, not here.
+
+**Overdue**:
+A contact whose last Interaction is further in the past than their Cadence.
+_Avoid_: stale, lapsed, neglected

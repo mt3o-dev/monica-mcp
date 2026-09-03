@@ -11,7 +11,7 @@ exist to satisfy Monica's foreign keys. This server collapses them.
 
 > **Status: design, no implementation.** The domain language is in
 > [CONTEXT.md](./CONTEXT.md) and the decisions so far are in [docs/adr/](./docs/adr/).
-> Nothing here runs yet. The build plan is [docs/PLAN-v1.md](./docs/PLAN-v1.md).
+> Nothing here runs yet. The build plan is in [context/](./context/), split into ordered units.
 
 ## Tools
 

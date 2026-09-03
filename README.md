@@ -63,6 +63,18 @@ A stdio mode exists for local development. It is not how the server is deployed.
 | `MONICA_BASE_URL` | Base URL of the Monica instance |
 | `MONICA_API_TOKEN` | Monica API token, from Settings → API |
 | `MCP_BEARER_TOKEN` | Credential callers must present |
+| `MONICA_EXPECTED_ACCOUNT` | Account the token must belong to; the server refuses to start on a mismatch |
+
+## Development
+
+TypeScript, on the `@modelcontextprotocol/sdk`, which speaks both Streamable
+HTTP and stdio.
+
+Development runs against a **separate Monica account on the same instance**, not
+against a separate instance. That keeps the real relationship history out of
+reach of a half-written write path, but only by account isolation — a
+misconfigured token would otherwise write test junk into real data, which is
+what `MONICA_EXPECTED_ACCOUNT` exists to prevent.
 
 ## License
 

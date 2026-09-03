@@ -15,7 +15,7 @@ exist to satisfy Monica's foreign keys. This server collapses them.
 
 ## Tools
 
-Three, and a tool exists only if you can name the sentence you would say to
+Four, and a tool exists only if you can name the sentence you would say to
 trigger it.
 
 | Tool | The sentence | Used by |
@@ -23,6 +23,7 @@ trigger it.
 | `log_interaction` | "log that I had coffee with Mike" | the write path |
 | `find_overdue` | "who haven't I spoken to in a while?" | the read path |
 | `brief_contact` | "what do I know about Bob?" | the read path |
+| `create_reminder` | "remind me to ask Bob how Berlin went in April" | either |
 
 `log_interaction` resolves the contact by name, picks which Monica resource to
 store the interaction in, and resets the contact's stay-in-touch clock, in one

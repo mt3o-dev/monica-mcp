@@ -1,61 +1,68 @@
 # monica-mcp
 
-An [MCP](https://modelcontextprotocol.io) server that exposes [Monica CRM](https://www.monicahq.com/)
-to MCP clients such as Claude Code, Claude Desktop, and other MCP-capable tools.
+An MCP server over [Monica CRM](https://www.monicahq.com/) that exposes the
+personal-CRM domain as **the tasks a person actually performs**, not as a mirror
+of Monica's ~30 REST endpoints.
 
-Monica is a personal CRM: contacts, the relationships between them, activities,
-notes, reminders, gifts, and tasks. This server puts that data behind the MCP
-protocol so an agent can read and update it directly.
+Other Monica MCP servers wrap the API one tool per endpoint, which leaves the
+model doing the orchestration: search the contact, read its id, list the activity
+types, pick one, then write. Five of those six calls carry no information — they
+exist to satisfy Monica's foreign keys. This server collapses them.
 
-> **Status:** early. The repository is being set up; nothing is implemented yet.
+> **Status: design, no implementation.** The domain language is in
+> [CONTEXT.md](./CONTEXT.md) and the decisions so far are in [docs/adr/](./docs/adr/).
+> Nothing here runs yet.
 
-## Requirements
+## Tools
 
-- Node.js 20+
-- A Monica instance (hosted at monicahq.com, or self-hosted)
-- A Monica API token — generate one under **Settings → API**
+Three, and a tool exists only if you can name the sentence you would say to
+trigger it.
 
-## Setup
+| Tool | The sentence | Used by |
+| --- | --- | --- |
+| `log_interaction` | "log that I had coffee with Mike" | the write path |
+| `find_overdue` | "who haven't I spoken to in a while?" | the read path |
+| `brief_contact` | "what do I know about Bob?" | the read path |
 
-```bash
-npm install
-npm run build
-```
+`log_interaction` resolves the contact by name, picks which Monica resource to
+store the interaction in, and resets the contact's stay-in-touch clock, in one
+call. Ambiguous names are never guessed — the tool returns the candidates and
+the caller asks the human.
+
+## Design in one paragraph
+
+Reference data — activity types — is fetched once at startup and embedded as an
+enum in the tool schema, so the model picks a valid type in the call it was
+already making rather than in a lookup round-trip. That makes startup depend on
+Monica: if Monica is unreachable or the token is wrong, the server does not
+start. Monica holds all state, including aliases; this server has no database
+and no cache. Contact identity is the one thing it will not guess, because a
+wrong contact is a silent, invisible error, while a wrong storage shape is not.
+
+## Deployment
+
+A long-lived HTTP Streamable service on the `internal` Docker network, alongside a
+self-hosted Monica. There is no public route in v1 and every caller is
+authenticated — the network is not the trust boundary. See
+[ADR 0002](./docs/adr/0002-http-streamable-long-lived-service.md) and
+[ADR 0003](./docs/adr/0003-validate-credentials-never-issue-them.md).
+
+A stdio mode exists for local development. It is not how the server is deployed.
+
+### Clients
+
+- **n8n** — drains captured notes on a schedule and writes interactions
+- **`assistant-bot`** — a Telegram bot running `claude -p`, for the read tools
+- **claude.ai** — a later addition, and the reason auth is a swappable layer
 
 ## Configuration
 
-The server reads its credentials from the environment:
-
-| Variable           | Description                                                       |
-| ------------------ | ----------------------------------------------------------------- |
-| `MONICA_BASE_URL`  | Base URL of your Monica instance, e.g. `https://app.monicahq.com` |
-| `MONICA_API_TOKEN` | Personal API token from Monica's settings                          |
-
-## Usage
-
-Register the server with an MCP client. For Claude Code:
-
-```bash
-claude mcp add monica -- node /path/to/monica-mcp/dist/index.js
-```
-
-Or add it to your client's MCP configuration:
-
-```json
-{
-  "mcpServers": {
-    "monica": {
-      "command": "node",
-      "args": ["/path/to/monica-mcp/dist/index.js"],
-      "env": {
-        "MONICA_BASE_URL": "https://app.monicahq.com",
-        "MONICA_API_TOKEN": "your-token-here"
-      }
-    }
-  }
-}
-```
+| Variable | Description |
+| --- | --- |
+| `MONICA_BASE_URL` | Base URL of the Monica instance |
+| `MONICA_API_TOKEN` | Monica API token, from Settings → API |
+| `MCP_BEARER_TOKEN` | Credential callers must present |
 
 ## License
 
-MIT
+Not yet chosen.

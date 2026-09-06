@@ -63,13 +63,19 @@ HTTP Streamable specifically: SSE is deprecated there.
 its `ALLOWED_TOOLS` list is a deliberate security boundary and currently grants
 no MCP access; widening it is a decision, not a detail.
 
-**The capture bot** — one-way by design, but needs to ask the disambiguation
-question. Use an **inline keyboard**, not a text reply: `callback_data` carries
-the pending-capture id plus contact id, which gives correlation for free and is
-one tap from a pub. It needs a small `pending.json`, which is precedent it
-already has for sessions.
+**The capture bot** — one-way by design, but the disambiguation question has to
+reach Telegram somehow. **It probably needs no code change at all.** n8n has a
+Telegram node, and it already owns the drain: it can send the inline keyboard
+using the capture bot's own token and receive the tap through a Telegram
+trigger. The message arrives from the same bot either way, so the user-visible
+behaviour is what was asked for, without giving a deliberately one-way bot a
+conversation loop.
 
-Both bot changes live in the second-brain vault — a **different repo**, so use a
+Use an inline keyboard rather than a text reply: `callback_data` carries the
+pending-capture id plus the contact id, which gives correlation for free and is
+one tap from a pub.
+
+Bot changes live in the second-brain vault — a **different repo**, so clone or
 worktree rather than switching branches in its live checkout.
 
 ## Ambiguity, end to end

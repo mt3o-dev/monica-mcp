@@ -14,7 +14,8 @@
     "stdio": "node --env-file=.env dist/index.js --stdio",
     "dev": "tsc --watch",
     "typecheck": "tsc --noEmit",
-    "test": "npm run build --silent && node --test test/*.test.js"
+    "test": "npm run build --silent && node --test test/*.test.js",
+    "seed": "npm run build --silent && node --env-file=.env dist/seed.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",

@@ -16,7 +16,7 @@ what it blocks.
 | # | Unit | Status |
 | --- | --- | --- |
 | 00 | [Shared machinery](./00-shared-machinery.md) | **done** |
-| 01 | [Resolution and seed data](./01-resolution-and-seed-data.md) | not started |
+| 01 | [Resolution and seed data](./01-resolution-and-seed-data.md) | **done** |
 | 02 | [`log_interaction`](./02-log-interaction.md) | not started |
 | 03 | [`brief_contact`](./03-brief-contact.md) | not started |
 | 04 | [`find_overdue`](./04-find-overdue.md) | not started |

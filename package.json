@@ -1,0 +1,27 @@
+{
+  "name": "monica-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Task-shaped MCP server over Monica CRM",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node --env-file=.env dist/index.js",
+    "stdio": "node --env-file=.env dist/index.js --stdio",
+    "dev": "tsc --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "npm run build --silent && node --test test/*.test.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "zod": "^4.5.4"
+  },
+  "devDependencies": {
+    "@types/node": "^26.4.1",
+    "typescript": "^7.0.2"
+  }
+}

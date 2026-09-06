@@ -4,6 +4,7 @@ import type { MonicaClient, ActivityType } from './monica.js';
 import { logInteraction } from './interactions.js';
 import { briefContact } from './briefing.js';
 import { findOverdue } from './overdue.js';
+import { createReminder, FREQUENCIES } from './reminders.js';
 import { RateLimitError } from './monica.js';
 import { rateLimited, failed } from './results.js';
 
@@ -107,6 +108,30 @@ export function registerTools(server: McpServer, deps: ToolDeps): void {
       },
     },
     async (input) => wrap(() => findOverdue(deps.client, input)),
+  );
+
+  server.registerTool(
+    'create_reminder',
+    {
+      title: 'Remind me about someone',
+      description:
+        'Create a reminder attached to a contact. Resolve dates yourself — pass an ISO ' +
+        'date, not "April". An ambiguous name returns candidates rather than a guess.',
+      inputSchema: {
+        contact: z.string().optional().describe('Name as the human said it.'),
+        contact_id: z.number().int().optional().describe('Exact Monica contact id.'),
+        title: z.string().min(1).describe('What to be reminded of.'),
+        initial_date: z.string().describe('ISO date, YYYY-MM-DD. Must not be in the past.'),
+        frequency: z.enum(FREQUENCIES).optional().describe('Default one_time.'),
+        frequency_number: z
+          .number()
+          .int()
+          .optional()
+          .describe('Every N weeks/months/years. Default 1.'),
+        description: z.string().optional().describe('Longer detail, optional.'),
+      },
+    },
+    async (input) => wrap(() => createReminder(deps.client, input)),
   );
 }
 

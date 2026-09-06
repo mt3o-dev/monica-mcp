@@ -20,7 +20,7 @@ what it blocks.
 | 02 | [`log_interaction`](./02-log-interaction.md) | **done** |
 | 03 | [`brief_contact`](./03-brief-contact.md) | **done** |
 | 04 | [`find_overdue`](./04-find-overdue.md) | **done** |
-| 05 | [`create_reminder`](./05-create-reminder.md) | not started |
+| 05 | [`create_reminder`](./05-create-reminder.md) | **done** |
 | 06 | [Deployment and clients](./06-deployment-and-clients.md) | not started |
 
 Update the status column when a unit lands. It is the only place that tracks

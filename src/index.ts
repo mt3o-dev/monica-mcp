@@ -7,6 +7,7 @@ import { ConfigError, loadConfig, type Config } from './config.js';
 import { MonicaClient } from './monica.js';
 import { makeBearerValidator, type Validator } from './auth.js';
 import { runStartupChecks, StartupError, type StartupResult } from './startup.js';
+import { registerTools } from './tools.js';
 
 const NAME = 'monica-mcp';
 const VERSION = '0.1.0';
@@ -22,10 +23,10 @@ interface Deps {
  * matches the design rule that this server holds no state — and keeps
  * concurrent callers (the drain and a bot) from sharing one connection.
  */
-function buildMcpServer(_deps: Deps): McpServer {
+function buildMcpServer(deps: Deps): McpServer {
   const server = new McpServer({ name: NAME, version: VERSION });
-  // Tools are registered in later units: 02 log_interaction, 03 brief_contact,
-  // 04 find_overdue, 05 create_reminder.
+  registerTools(server, { client: deps.client, activityTypes: deps.startup.activityTypes });
+  // Still to come: 03 brief_contact, 04 find_overdue, 05 create_reminder.
   return server;
 }
 

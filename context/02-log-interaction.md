@@ -18,6 +18,7 @@ resolution into the server.
 | `medium` | optional: `phone` \| `in_person` \| `message` |
 | `capture_id` | optional; vault filename or hash, for retry safety |
 | `remember_alias` | optional; see 01 — writes the alias back after a disambiguation |
+| `resolved_from` | optional; the name originally typed, when re-calling with `contact_ids` |
 
 There is deliberately no `follow_up`: you chose four separate tools over three
 with a follow-up parameter, and a parameter that duplicates a tool is how

@@ -37,14 +37,14 @@ event produces two calls.
    ([ADR 0001](../docs/adr/0001-server-chooses-interaction-shape.md))
 3. Write: `summary` into Monica's summary field, `raw_text` **verbatim** into
    `description`. ([ADR 0004](../docs/adr/0004-raw-capture-text-is-stored-verbatim.md))
-4. Reset each participant's stay-in-touch clock (`PUT /api/contacts/:id`).
-   **Best-effort** — never fail the log because bookkeeping failed. The
-   interaction is the data; the clock is derived.
+There is **no fourth step**. We planned to reset each participant's
+stay-in-touch clock here; the API cannot write it, and Monica maintains
+`last_activity_together` / `last_called` by itself when the record is created.
+See [ADR 0005](../docs/adr/0005-overdue-reads-monicas-own-timestamps.md). That
+removes a write, and with it the partial-failure state where the interaction
+lands but the bookkeeping does not.
 
-Step 4 is what keeps `find_overdue` (04) cheap: Monica's trigger date stays the
-true clock instead of drifting, so the sweep never needs per-contact history.
-
-**Cost**: ~3 requests for a single-contact log.
+**Cost**: ~2 requests for a single-contact log.
 
 ## Done when
 
@@ -52,6 +52,6 @@ true clock instead of drifting, so the sweep never needs per-contact history.
 - A multi-contact log produces an Activity; `medium: phone` produces a Call.
 - No input can produce a Conversation.
 - An ambiguous participant returns `ambiguous` and leaves Monica untouched.
-- A failed clock reset still reports `ok` with the record id.
 - The same `capture_id` twice does not produce two records.
+- After a log, the participant's `last_activity_together` reflects `happened_at`.
 - `raw_text` survives into `description` byte-for-byte.

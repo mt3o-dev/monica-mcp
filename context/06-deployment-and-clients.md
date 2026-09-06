@@ -26,16 +26,32 @@ docker run --rm --network "$DOCKER_NETWORK" curlimages/curl -s http://monica-mcp
 
 ## Wiring the clients
 
-**n8n** — add an MCP Client Tool node to an AI Agent:
+**n8n** — a workflow named *Monica drain — 2-Inbox to CRM* is imported and
+**inactive**: schedule trigger every 15 minutes, read `/vault/2-Inbox/*.md`,
+extract the text, hand it to an AI Agent with the MCP Client Tool attached.
 
-- Endpoint: `http://monica-mcp:8779/mcp`
-- Transport: **HTTP Streamable** (not SSE, which is deprecated there and
-  unsupported by Claude's connector infrastructure)
-- Auth: header `Authorization: Bearer <MCP_BEARER_TOKEN>`
+- Endpoint `http://monica-mcp:8779/mcp`, transport **HTTP Streamable** (not SSE,
+  which is deprecated there)
+- Auth: an `httpBearerAuth` credential named `monica-mcp bearer`, encrypted at
+  rest with n8n's encryption key
 
-n8n must be on the same Docker network. The drain needs an LLM in the loop —
-turning free text into an Interaction is language work — so this belongs on an
-AI Agent node, not an HTTP Request node.
+The agent prompt tells it to pass the note text through **unedited** as
+`raw_text`, to set `capture_id` to the filename so a retry cannot double-write,
+and — importantly — to **stop and report candidates** if `log_interaction`
+returns `ambiguous`, rather than calling again with a guess.
+
+The drain needs an LLM in the loop, since turning free text into an Interaction
+is language work. That belongs on an AI Agent node, never an HTTP Request node.
+
+Two things it still needs before activation:
+
+1. **A mount.** n8n cannot see the vault. Add to its compose service and
+   recreate:
+   ```yaml
+   volumes:
+     - /path/to/vault/2-Inbox:/vault/2-Inbox
+   ```
+2. **An LLM credential** on the Anthropic Chat Model node.
 
 **Claude Code**:
 

@@ -21,7 +21,7 @@ what it blocks.
 | 03 | [`brief_contact`](./03-brief-contact.md) | **done** |
 | 04 | [`find_overdue`](./04-find-overdue.md) | **done** |
 | 05 | [`create_reminder`](./05-create-reminder.md) | **done** |
-| 06 | [Deployment and clients](./06-deployment-and-clients.md) | server deployed; n8n workflow outstanding |
+| 06 | [Deployment and clients](./06-deployment-and-clients.md) | deployed; n8n workflow imported, awaiting mount + LLM credential |
 
 Update the status column when a unit lands. It is the only place that tracks
 progress.

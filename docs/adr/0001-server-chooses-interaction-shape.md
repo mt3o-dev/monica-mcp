@@ -17,3 +17,10 @@ three resources by an implicit rule, changing the rule does not migrate the data
 already written, and a reader who sees `log_interaction` produce a `Call` row
 will have no way to know why without this note. We accept that in exchange for
 the one-call write.
+
+**Scope note (v1).** Only two of the three shapes are in play: Call when the
+medium is a phone call, Activity otherwise. Conversation requires a
+`contact_field_type_id` naming the channel, which nothing in our input supplies,
+and no sentence anyone actually says calls for per-message authorship. The
+decision above is unchanged — the server still chooses, and the caller still
+never names a Monica resource — the menu is just shorter.

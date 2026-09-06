@@ -17,15 +17,23 @@ resolution into the server.
 | `happened_at` | ISO date, defaults to now |
 | `medium` | optional: `phone` \| `in_person` \| `message` |
 | `capture_id` | optional; vault filename or hash, for retry safety |
-| `follow_up` | optional; delegates to `create_reminder` (05) |
+| `remember_alias` | optional; see 01 — writes the alias back after a disambiguation |
+
+There is deliberately no `follow_up`: you chose four separate tools over three
+with a follow-up parameter, and a parameter that duplicates a tool is how
+surface area doubles. A capture containing both an interaction and a future
+event produces two calls.
 
 ## Behaviour
 
 1. Resolve every contact. **Any ambiguity → return `ambiguous`, write nothing.**
    Partial success is not a thing here.
-2. Choose the storage shape — more than one contact → Activity; `medium: phone`
-   → Call; per-message authorship genuinely matters → Conversation. The caller
-   never names a Monica resource.
+2. Choose the storage shape — `medium: phone` → Call; everything else →
+   Activity. The caller never names a Monica resource.
+   **Conversation is out of scope for v1**: it needs a `contact_field_type_id`
+   (the channel — SMS, email) that no input supplies, it is the most expensive
+   write of the three, and "per-message authorship matters" has never been a
+   sentence anyone said.
    ([ADR 0001](../docs/adr/0001-server-chooses-interaction-shape.md))
 3. Write: `summary` into Monica's summary field, `raw_text` **verbatim** into
    `description`. ([ADR 0004](../docs/adr/0004-raw-capture-text-is-stored-verbatim.md))
@@ -42,6 +50,7 @@ true clock instead of drifting, so the sweep never needs per-contact history.
 
 - A single-contact log writes one record and resets one clock.
 - A multi-contact log produces an Activity; `medium: phone` produces a Call.
+- No input can produce a Conversation.
 - An ambiguous participant returns `ambiguous` and leaves Monica untouched.
 - A failed clock reset still reports `ok` with the record id.
 - The same `capture_id` twice does not produce two records.

@@ -40,6 +40,29 @@ The caller asks the human and calls again with `contact_id`. **The server holds
 no pending state.** Every tool accepts either `contact` (name) or `contact_id`
 (exact), and re-calls carry their full payload.
 
+## Alias write-back
+
+Resolution's feedback loop: every ambiguity resolved once should be one you never
+see again. Monica is the shared brain, so a confirmed alias goes there — not into
+local state this server does not have.
+
+The server is stateless, so it cannot know that a disambiguation just happened.
+The caller carries that instead:
+
+- Tools accept **both** `contact_id` and the original `contact` string. When both
+  are present and the string matches neither the contact's names nor its
+  `nickname`, the result carries an `alias_suggestion`.
+- The suggestion **rides along with success** — it never gates the write. The log
+  succeeds; the question is a passenger on the result.
+- The caller passes `remember_alias: true` on a later call to apply it. **Never
+  written without an explicit yes**, even though it is reversible in Monica's UI.
+- Only written when `nickname` is **empty**. If a nickname is already set, do not
+  offer to overwrite it — that is something the user typed by hand.
+
+`nickname` is single-valued, so it holds one alias. Mike/Mikey/Mick for the same
+contact is a known limitation, accepted for v1: the alternative was local state,
+which was rejected twice.
+
 ## Seed data
 
 A fantasy cast in the dev account — unicorns, D&D trolls — so test data can never
@@ -54,6 +77,8 @@ exercise resolution:
 | Cadence set, zero interactions | `find_overdue` edge |
 | Cadence unset | must be **excluded** from `find_overdue` |
 | A contact with 200 interactions | `brief_contact` pagination |
+| A contact with an empty `nickname` | alias write-back offers |
+| A contact with `nickname` already set | alias write-back stays silent |
 
 ## Done when
 

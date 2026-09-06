@@ -3,6 +3,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { MonicaClient, ActivityType } from './monica.js';
 import { logInteraction } from './interactions.js';
 import { briefContact } from './briefing.js';
+import { findOverdue } from './overdue.js';
 import { RateLimitError } from './monica.js';
 import { rateLimited, failed } from './results.js';
 
@@ -87,6 +88,25 @@ export function registerTools(server: McpServer, deps: ToolDeps): void {
       },
     },
     async (input) => wrap(() => briefContact(deps.client, input)),
+  );
+
+  server.registerTool(
+    'find_overdue',
+    {
+      title: 'Who have I not spoken to?',
+      description:
+        'Contacts you meant to stay in touch with and have not, most overdue first. ' +
+        'Only contacts with a stay-in-touch cadence set in Monica are considered — an ' +
+        'unset cadence means no intention was ever expressed. Read-only.',
+      inputSchema: {
+        limit: z.number().int().optional().describe('How many to return. Default 10.'),
+        include_never_contacted: z
+          .boolean()
+          .optional()
+          .describe('Include contacts with a cadence but nothing logged. Default true.'),
+      },
+    },
+    async (input) => wrap(() => findOverdue(deps.client, input)),
   );
 }
 

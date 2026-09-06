@@ -19,7 +19,7 @@ what it blocks.
 | 01 | [Resolution and seed data](./01-resolution-and-seed-data.md) | **done** |
 | 02 | [`log_interaction`](./02-log-interaction.md) | **done** |
 | 03 | [`brief_contact`](./03-brief-contact.md) | **done** |
-| 04 | [`find_overdue`](./04-find-overdue.md) | not started |
+| 04 | [`find_overdue`](./04-find-overdue.md) | **done** |
 | 05 | [`create_reminder`](./05-create-reminder.md) | not started |
 | 06 | [Deployment and clients](./06-deployment-and-clients.md) | not started |
 

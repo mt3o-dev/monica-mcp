@@ -80,6 +80,10 @@ exercise resolution:
 | A contact with an empty `nickname` | alias write-back offers |
 | A contact with `nickname` already set | alias write-back stays silent |
 
+Re-running the seed converges to these fixtures, so it clears any nickname that
+exercising the alias write-back wrote. Expected: the fixtures define what the
+dev account looks like.
+
 ## Done when
 
 - Each fixture above resolves to the documented outcome, as a test.

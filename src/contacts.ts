@@ -22,6 +22,11 @@ interface Paginated<T> {
 /**
  * Monica's own search. It matches first name, last name and nickname, which is
  * why tier 1 can rely on it — verified against a live instance.
+ *
+ * CAUTION: results from `?query=` report `stay_in_touch_frequency` as null even
+ * when a cadence is set. The field is present, so the value looks authoritative
+ * and reads as "no cadence" — it is simply wrong. The plain list and GET by id
+ * both return the real value. Never read a cadence off a search result.
  */
 export async function searchContacts(client: MonicaClient, query: string): Promise<Contact[]> {
   const { data } = await client.request<Paginated<Contact>>(

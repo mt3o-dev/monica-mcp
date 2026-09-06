@@ -2,6 +2,7 @@ import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { MonicaClient, ActivityType } from './monica.js';
 import { logInteraction } from './interactions.js';
+import { briefContact } from './briefing.js';
 import { RateLimitError } from './monica.js';
 import { rateLimited, failed } from './results.js';
 
@@ -65,6 +66,27 @@ export function registerTools(server: McpServer, deps: ToolDeps): void {
       },
     },
     async (input) => wrap(() => logInteraction(deps.client, deps.activityTypes, input)),
+  );
+
+  server.registerTool(
+    'brief_contact',
+    {
+      title: 'Brief me on a contact',
+      description:
+        'Everything worth knowing before speaking to someone: who they are, recent ' +
+        'interactions, relationships, open reminders and tasks, and how overdue they are. ' +
+        'Read-only. An ambiguous name returns candidates rather than a guess.',
+      inputSchema: {
+        contact: z.string().optional().describe('Name as the human said it, e.g. "Mike".'),
+        contact_id: z.number().int().optional().describe('Exact Monica contact id.'),
+        history: z
+          .number()
+          .int()
+          .optional()
+          .describe('How many recent interactions to include. Default 5, max 25.'),
+      },
+    },
+    async (input) => wrap(() => briefContact(deps.client, input)),
   );
 }
 

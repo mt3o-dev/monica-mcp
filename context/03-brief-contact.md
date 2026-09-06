@@ -23,7 +23,10 @@ payloads:
 - outstanding reminders and tasks
 - cadence status, phrased usefully: "monthly, 12 days overdue"
 
-**Cost**: ~4–5 requests.
+**Cost**: ~6 requests — the contact is always refetched by id after resolution,
+because `?query=` results report `stay_in_touch_frequency` as null whatever the
+real value is, and a briefing that silently says "no cadence set" is worse than
+one that costs an extra request.
 
 ## Done when
 

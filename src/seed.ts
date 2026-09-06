@@ -5,7 +5,10 @@
  * database is a non-event, and "Grimlock the Bridgetroll" appearing in
  * production is instantly diagnosable.
  *
- * Idempotent — run it as often as you like.
+ * Idempotent — run it as often as you like. Note that it converges to the
+ * declared state, so it will clear a nickname that testing the alias
+ * write-back wrote. That is deliberate: fixtures are the source of truth for
+ * what the dev account looks like.
  */
 import { loadConfig } from './config.js';
 import { MonicaClient } from './monica.js';

@@ -1,0 +1,19 @@
+services:
+  monica-mcp:
+    build: .
+    image: monica-mcp:latest
+    container_name: monica-mcp
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      MCP_PORT: 8779
+    networks: [shared]
+    # Deliberately no `ports:`. There is no public route in v1 — reachable only
+    # by other containers on the shared network. See ADR 0002 and ADR 0003.
+
+networks:
+  shared:
+    # Real network name comes from .env (gitignored), so this file stays
+    # portable: DOCKER_NETWORK=<your shared network>
+    name: ${DOCKER_NETWORK:-mcp-net}
+    external: true

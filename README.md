@@ -56,6 +56,17 @@ A stdio mode exists for local development. It is not how the server is deployed.
 - **`assistant-bot`** — a Telegram bot running `claude -p`, for the read tools
 - **claude.ai** — a later addition, and the reason auth is a swappable layer
 
+## Running it
+
+```bash
+cp .env.example .env    # fill in, then
+docker compose up -d --build
+```
+
+No ports are published: the server is reachable only from the shared Docker
+network, and every caller must present a credential. See
+[context/06](./context/06-deployment-and-clients.md).
+
 ## Configuration
 
 | Variable | Description |

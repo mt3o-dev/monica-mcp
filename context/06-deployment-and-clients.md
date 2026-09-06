@@ -2,6 +2,48 @@
 
 **Depends on**: 00–05.
 
+## Running it
+
+`compose.yml` builds and runs the server with no `ports:` — reachable only from
+the shared Docker network. The network's real name comes from `DOCKER_NETWORK`
+in `.env`, so the committed file carries no infrastructure names.
+
+```bash
+docker compose up -d --build
+docker compose logs -f monica-mcp
+```
+
+The container runs as `node`, not root: this process holds a token that can read
+every contact. `/health` needs no credential and reveals only liveness, which is
+what the healthcheck uses.
+
+Verify from the network rather than the host — the host cannot reach it, by
+design:
+
+```bash
+docker run --rm --network "$DOCKER_NETWORK" curlimages/curl -s http://monica-mcp:8779/health
+```
+
+## Wiring the clients
+
+**n8n** — add an MCP Client Tool node to an AI Agent:
+
+- Endpoint: `http://monica-mcp:8779/mcp`
+- Transport: **HTTP Streamable** (not SSE, which is deprecated there and
+  unsupported by Claude's connector infrastructure)
+- Auth: header `Authorization: Bearer <MCP_BEARER_TOKEN>`
+
+n8n must be on the same Docker network. The drain needs an LLM in the loop —
+turning free text into an Interaction is language work — so this belongs on an
+AI Agent node, not an HTTP Request node.
+
+**Claude Code**:
+
+```bash
+claude mcp add --transport http monica http://monica-mcp:8779/mcp \
+  --header "Authorization: Bearer <MCP_BEARER_TOKEN>"
+```
+
 ## The server
 
 A long-lived HTTP Streamable service on the shared internal Docker network,

@@ -17,6 +17,8 @@ interface Fixture {
   last_name: string;
   nickname: string | null;
   activities: number;
+  /** Days ago the most recent seeded activity happened. Older ones step back weekly. */
+  activityStartDaysAgo?: number;
   exercises: string;
 }
 
@@ -33,6 +35,9 @@ const FIXTURES: Fixture[] = [
     exercises: 'tier 1 must read nickname; nickname set, so alias write-back stays silent' },
   { first_name: 'Thistledown', last_name: 'Moonwhisper', nickname: null, activities: 25,
     exercises: 'pagination in brief_contact (Monica pages at 10)' },
+  { first_name: 'Mildred', last_name: 'Bogwitch', nickname: null, activities: 1,
+    activityStartDaysAgo: 400,
+    exercises: 'genuinely stale: set a cadence and find_overdue must surface her' },
 ];
 
 async function findByName(client: MonicaClient, f: Fixture): Promise<Contact | undefined> {
@@ -82,7 +87,7 @@ async function main(): Promise<void> {
         activity_type_id: activityTypeId,
         summary: `Encounter ${i + 1} with ${contact.first_name}`,
         description: `Raw capture text for encounter ${i + 1}. Kept verbatim, per ADR 0004.`,
-        happened_at: dayOffset(-(i * 7 + 1)),
+        happened_at: dayOffset(-((f.activityStartDaysAgo ?? 1) + i * 7)),
         contacts: [contact.id],
       });
     }
@@ -96,7 +101,8 @@ stay_in_touch_frequency is read-only over the API (ADR 0005), so to exercise
 find_overdue, open Monica and set "Stay in touch" by hand:
   - Grimlock Stonefist  -> every 7 days   (cadence set, never contacted -> overdue)
   - Grimlock Bridgetroll -> every 365 days (cadence set, recent -> not overdue)
-  - Grim Toadwart       -> leave unset    (must never appear in find_overdue)`);
+  - Grim Toadwart       -> leave unset    (must never appear in find_overdue)
+  - Mildred Bogwitch    -> every 30 days  (last seen 400 days ago -> must surface)`);
 }
 
 async function countActivities(client: MonicaClient, contactId: number): Promise<number> {

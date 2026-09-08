@@ -19,3 +19,10 @@ Monica instance is remote rather than a neighbour on the `internal` network, so 
 public round-trips and a cache would genuinely save something — but it is an
 optimisation we have not measured, and every earlier attempt to specify one
 grew a staleness problem larger than the latency it removed.
+
+**Amendment, 2026-09-08.** The service now also publishes `127.0.0.1:8779` on the
+host. The decision above is unchanged — this is not a public route, and the
+network is still not the trust boundary. It exists because the Telegram bots run
+as host processes rather than containers, so they had no route to the shared
+network at all. Binding is loopback-only, and every caller still presents a
+bearer token per ADR 0003.

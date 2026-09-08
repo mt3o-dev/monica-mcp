@@ -8,8 +8,13 @@ services:
     environment:
       MCP_PORT: 8779
     networks: [shared]
-    # Deliberately no `ports:`. There is no public route in v1 — reachable only
-    # by other containers on the shared network. See ADR 0002 and ADR 0003.
+    ports:
+      # Loopback only. Still no public route in v1 — this binds to 127.0.0.1,
+      # not 0.0.0.0, so nothing outside this host can reach it. It exists
+      # because the Telegram bots run as host processes rather than containers
+      # and would otherwise have no route at all. The bearer token remains the
+      # trust boundary, exactly as before. See ADR 0002 and ADR 0003.
+      - "127.0.0.1:8779:8779"
 
 networks:
   shared:

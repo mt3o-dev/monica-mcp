@@ -48,15 +48,32 @@ returns `ambiguous`, rather than calling again with a guess.
 The drain needs an LLM in the loop, since turning free text into an Interaction
 is language work. That belongs on an AI Agent node, never an HTTP Request node.
 
-Two things it still needs before activation:
+**Done, 2026-09-08.** The mount, the Anthropic credential and the dedupe filter
+are all in place. Three things bit on the way, none of them obvious:
 
-1. **A mount.** n8n cannot see the vault. Add to its compose service and
-   recreate:
-   ```yaml
-   volumes:
-     - /path/to/vault/2-Inbox:/vault/2-Inbox
-   ```
-2. **An LLM credential** on the Anthropic Chat Model node.
+1. **The mount must be read-write.** The drain marks the notes it logs, so a
+   `:ro` mount makes it re-log the same note every 15 minutes forever.
+2. **A uid mismatch.** n8n runs as uid 1000 (`node`); the vault is uid 1002
+   (`mt3o`) mode 775, so the container only got "other" permissions. Fixed with
+   `group_add: ["1002"]` — narrower than chowning the vault or going 777, and it
+   leaves the container's own uid alone (it owns the `n8n-data` volume).
+3. **n8n 2.x denies node filesystem access by default.** With the mount present,
+   readable and correct, `Read captures` still failed with
+   `NodeApiError: Access to the file is not allowed.` — which does not hint at
+   the cause. The fix is an explicit allowlist on the n8n service:
+   `N8N_RESTRICT_FILE_ACCESS_TO: /files:/vault/2-Inbox`.
+
+The workflow now runs `Read captures → Note text → Skip already logged → Drain
+to Monica`. **`Skip already logged`** is a Filter node dropping any note whose
+text contains `monica_logged: true`; without it, activating the drain alongside
+the capture bot double-writes.
+
+**It is still inactive, deliberately.** Activation waits on contacts existing in
+the target Monica account — with an empty account every note fails to resolve, so
+a run can only spend API credits. Note also that the drain is billed per-token
+against an Anthropic API key, whereas the capture bot's `claude -p` runs on the
+CLI's own auth: if captures arrive mainly by Telegram, the drain's marginal value
+is only non-Telegram notes and prefilter misses.
 
 **Claude Code**:
 

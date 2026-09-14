@@ -48,8 +48,9 @@ returns `ambiguous`, rather than calling again with a guess.
 The drain needs an LLM in the loop, since turning free text into an Interaction
 is language work. That belongs on an AI Agent node, never an HTTP Request node.
 
-**Done, 2026-09-08.** The mount, the Anthropic credential and the dedupe filter
-are all in place. Three things bit on the way, none of them obvious:
+**Done, 2026-09-08**, with two follow-ups on 2026-09-10. The mount, the Anthropic
+credential and the dedupe filter are all in place. Five things bit on the way,
+none of them obvious, and items 4 and 5 only surfaced on the first real run:
 
 1. **The mount must be read-write.** The drain marks the notes it logs, so a
    `:ro` mount makes it re-log the same note every 15 minutes forever.
@@ -61,7 +62,39 @@ are all in place. Three things bit on the way, none of them obvious:
    readable and correct, `Read captures` still failed with
    `NodeApiError: Access to the file is not allowed.` — which does not hint at
    the cause. The fix is an explicit allowlist on the n8n service:
-   `N8N_RESTRICT_FILE_ACCESS_TO: /files:/vault/2-Inbox`.
+   `N8N_RESTRICT_FILE_ACCESS_TO: /files;/vault/2-Inbox`.
+
+4. **That allowlist is semicolon-separated, not colon-separated.** It was first
+   written with a colon, which produces the *same* "Access to the file is not
+   allowed." error and therefore looks like the allowlist is being ignored. It
+   is not: `getAllowedPaths()` in `n8n-core` does `restrictFileAccessTo.split(';')`,
+   so a colon-joined value becomes one directory literally named
+   `/files:/vault/2-Inbox`, nothing is contained within it, and every read is
+   denied. Verify the parse rather than the env var — inside the container,
+   `Container.get(SecurityConfig).restrictFileAccessTo.split(';')` must yield
+   two entries.
+
+5. **The Agent node has to be a Tools Agent, and its `typeVersion` decides
+   whether that is even offered.** An MCP client tool can only attach to a
+   tool-calling agent, so with the node left at `typeVersion: 1.3` n8n refused
+   the run: `The selected tools are not supported by "Conversational Agent",
+   please use "Tools Agent" instead`. This is not fixable from the dropdown —
+   `AgentV1` filters `toolsAgent` out of the options for `@version <= 1.5` and
+   defaults to `conversationalAgent`, so the UI never shows the one value that
+   works. The node must move to a newer version instead. Done by exporting the
+   workflow, setting the agent node to `typeVersion: 3.1` (V3 is Tools-Agent-only
+   and the node's current default) and re-importing:
+
+   ```
+   n8n export:workflow --id=<id> --output=drain.json
+   # edit typeVersion on the agent node
+   n8n import:workflow --input=drain.json --projectId=<projectId>
+   ```
+
+   Pass `--projectId` (read it from `shared_workflow`) or the import drops the
+   ownership row and the workflow vanishes from the UI list. `--activeState`
+   defaults to `false`, which is harmless only because this workflow is inactive
+   anyway.
 
 The workflow now runs `Read captures → Note text → Skip already logged → Drain
 to Monica`. **`Skip already logged`** is a Filter node dropping any note whose
